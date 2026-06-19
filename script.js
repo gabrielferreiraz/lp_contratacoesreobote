@@ -18,26 +18,71 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 const els = {
-  step1:        $('step-1'),
-  step2:        $('step-2'),
-  nome:         $('nome'),
-  idade:        $('idade'),
-  telefone:     $('telefone'),
-  email:        $('email'),
-  vSim:         $('v-sim'),
-  vNao:         $('v-nao'),
-  sobre:        $('sobre'),
-  btnNext:      $('btn-next'),
-  btnBack:      $('btn-back'),
-  submitArea:   $('submit-area'),
-  btnSemCarro:  $('btn-sem-carro'),
-  btnComCarro:  $('btn-com-carro'),
-  progStep1:    document.querySelector('[data-step="1"]'),
-  progStep2:    document.querySelector('[data-step="2"]'),
-  progFill:     $('prog-line-fill'),
-  form:         $('candidacy-form'),
-  successSem:   $('success-sem-carro'),
+  step1:         $('step-1'),
+  step2:         $('step-2'),
+  nome:          $('nome'),
+  idade:         $('idade'),
+  telefone:      $('telefone'),
+  email:         $('email'),
+  vSim:          $('v-sim'),
+  vNao:          $('v-nao'),
+  sobre:         $('sobre'),
+  btnNext:       $('btn-next'),
+  btnBack:       $('btn-back'),
+  submitArea:    $('submit-area'),
+  btnSemCarro:   $('btn-sem-carro'),
+  btnComCarro:   $('btn-com-carro'),
+  progStep1:     document.querySelector('[data-step="1"]'),
+  progStep2:     document.querySelector('[data-step="2"]'),
+  progFill:      $('prog-line-fill'),
+  form:          $('candidacy-form'),
+  successSem:    $('success-sem-carro'),
+  modalOverlay:  $('modal-overlay'),
+  modalClose:    $('modal-close'),
+  formProgress:  $('form-progress'),
 };
+
+/* ============================================================
+   MODAL — abrir / fechar
+   ============================================================ */
+let _viewContentFired = false;
+
+function openModal() {
+  els.modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  /* ViewContent dispara na primeira abertura do modal */
+  if (!_viewContentFired) {
+    _viewContentFired = true;
+    _fbq('track', 'ViewContent');
+  }
+}
+
+function closeModal() {
+  els.modalOverlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+/* Fecha clicando no fundo */
+els.modalOverlay.addEventListener('click', (e) => {
+  if (e.target === els.modalOverlay) closeModal();
+});
+
+/* Fecha com ESC */
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* Botão X */
+els.modalClose.addEventListener('click', closeModal);
+
+/* Todos os CTAs abrem o modal + disparam InitiateCheckout */
+document.querySelectorAll('.js-open-modal').forEach((btn) => {
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    _fbq('track', 'InitiateCheckout');
+    openModal();
+  });
+});
 
 /* ============================================================
    MÁSCARA DE TELEFONE
@@ -209,8 +254,8 @@ function goToStep(n) {
     els.progFill.style.width = '0%';
   }
 
-  /* Scroll até o formulário */
-  document.getElementById('formulario').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  /* Volta ao topo do modal */
+  els.modalOverlay.scrollTop = 0;
 }
 
 /* ============================================================
@@ -309,9 +354,9 @@ async function submitToSheets(payload) {
 /* ── Exibe sucesso sem carro ────────────────────────────────── */
 function showSuccessSemCarro() {
   els.form.classList.add('hidden');
-  document.querySelector('.form-progress').classList.add('hidden');
+  els.formProgress.classList.add('hidden');
   els.successSem.classList.remove('hidden');
-  document.getElementById('formulario').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  els.modalOverlay.scrollTop = 0;
 }
 
 /* ── Erro de rede no botão ──────────────────────────────────── */
@@ -344,17 +389,7 @@ function setLoading(btn, on) {
   }
 }
 
-/* ============================================================
-   SMOOTH SCROLL — hero CTA
-   ============================================================ */
-document.querySelectorAll('a[href="#formulario"], .btn-cta').forEach((el) => {
-  if (el.tagName === 'A') {
-    el.addEventListener('click', (e) => {
-      e.preventDefault();
-      document.getElementById('formulario').scrollIntoView({ behavior: 'smooth' });
-    });
-  }
-});
+/* (smooth scroll removido — form agora é modal) */
 
 /* ============================================================
    INTERSECTION OBSERVER — reveal on scroll
@@ -373,23 +408,7 @@ const observer = new IntersectionObserver(
 
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
-/* ============================================================
-   META PIXEL — ViewContent
-   Dispara uma vez quando o formulário entra na tela
-   (usuário percorreu todo o conteúdo da página)
-   ============================================================ */
-const vcObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
-        vcObserver.disconnect();
-      }
-    });
-  },
-  { threshold: 0.1 }
-);
-vcObserver.observe(document.getElementById('formulario'));
+/* (ViewContent agora dispara em openModal — ver acima) */
 
 /* ============================================================
    META PIXEL — helpers
@@ -397,10 +416,7 @@ vcObserver.observe(document.getElementById('formulario'));
 function trackLead()            { _fbq('track', 'Lead'); }
 function _fbq(type, event, obj) { if (typeof fbq !== 'undefined') fbq(type, event, obj); }
 
-/* ── InitiateCheckout — clique em qualquer CTA ──────────────── */
-document.querySelectorAll('.btn-cta').forEach((btn) => {
-  btn.addEventListener('click', () => _fbq('track', 'InitiateCheckout'));
-});
+/* ── InitiateCheckout — dispara junto com openModal ─────────── */
 
 /* ── ScrollDepth — 50% e 90% ────────────────────────────────── */
 const _scrollFired = { 50: false, 90: false };
