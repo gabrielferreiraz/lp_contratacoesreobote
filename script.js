@@ -237,6 +237,7 @@ els.btnSemCarro.addEventListener('click', async () => {
 
   try {
     await submitToSheets(buildPayload());
+    trackLead();
     showSuccessSemCarro();
   } catch (err) {
     showNetworkError(els.btnSemCarro);
@@ -255,9 +256,11 @@ els.btnComCarro.addEventListener('click', async () => {
 
   try {
     await submitToSheets(buildPayload());
+    trackLead();
     window.open(CONFIG.WHATSAPP_GROUP, '_blank', 'noopener,noreferrer');
   } catch (err) {
     /* Mesmo com erro de rede, redireciona — lead não é perdido na UX */
+    trackLead();
     window.open(CONFIG.WHATSAPP_GROUP, '_blank', 'noopener,noreferrer');
   } finally {
     setLoading(els.btnComCarro, false);
@@ -366,3 +369,26 @@ const observer = new IntersectionObserver(
 );
 
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+/* ============================================================
+   META PIXEL — ViewContent
+   Dispara uma vez quando o formulário entra na tela
+   (usuário percorreu todo o conteúdo da página)
+   ============================================================ */
+const vcObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        if (typeof fbq !== 'undefined') fbq('track', 'ViewContent');
+        vcObserver.disconnect();
+      }
+    });
+  },
+  { threshold: 0.1 }
+);
+vcObserver.observe(document.getElementById('formulario'));
+
+/* ── Helper: dispara Lead no Meta Pixel ─────────────────────── */
+function trackLead() {
+  if (typeof fbq !== 'undefined') fbq('track', 'Lead');
+}
