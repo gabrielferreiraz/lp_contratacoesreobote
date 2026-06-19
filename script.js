@@ -199,8 +199,8 @@ function updateSubmitArea() {
 /* ── Veículo — seleção ──────────────────────────────────────── */
 els.vSim.addEventListener('click', () => {
   state.possuiCarro = 'SIM';
-  els.vSim.classList.add('selected-sim');
-  els.vNao.classList.remove('selected-nao');
+  els.vSim.classList.add('selected');
+  els.vNao.classList.remove('selected');
   clearError('err-veiculo');
   _fbq('trackCustom', 'SelecionouVeiculo', { possui: 'SIM' });
   updateSubmitArea();
@@ -208,8 +208,8 @@ els.vSim.addEventListener('click', () => {
 
 els.vNao.addEventListener('click', () => {
   state.possuiCarro = 'NÃO';
-  els.vNao.classList.add('selected-nao');
-  els.vSim.classList.remove('selected-sim');
+  els.vNao.classList.add('selected');
+  els.vSim.classList.remove('selected');
   clearError('err-veiculo');
   _fbq('trackCustom', 'SelecionouVeiculo', { possui: 'NÃO' });
   updateSubmitArea();

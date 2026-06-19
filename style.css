@@ -711,36 +711,48 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 /* ── Vehicle options ────────────────────────────────────────── */
 .vehicle-opts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 .vbtn {
-  padding: 14px 10px;
+  width: 100%;
+  padding: 14px 16px;
   border-radius: var(--radius-sm);
   border: 1.5px solid var(--glass-bd);
-  background: rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
   color: var(--text);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 500;
   font-family: 'Inter', sans-serif;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.2s;
+  gap: 12px;
+  transition: border-color 0.2s, background 0.2s;
   min-height: 52px;
+  text-align: left;
 }
-.vbtn:hover { border-color: var(--gold-1); background: rgba(212,175,55,0.06); }
-.vbtn.selected-sim {
-  border-color: var(--green);
-  background: rgba(0,230,118,0.1);
-  color: var(--green);
+.vbtn:hover {
+  border-color: rgba(212,175,55,0.3);
+  background: rgba(212,175,55,0.04);
 }
-.vbtn.selected-nao {
-  border-color: #ff5370;
-  background: rgba(255,83,112,0.08);
-  color: #ff8095;
+.vbtn-radio {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  flex-shrink: 0;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.vbtn.selected {
+  border-color: var(--gold-1);
+  background: rgba(212,175,55,0.07);
+  color: var(--white);
+}
+.vbtn.selected .vbtn-radio {
+  border-color: var(--gold-1);
+  background: var(--gold-1);
+  box-shadow: inset 0 0 0 3px var(--bg);
 }
 
 /* ── Submit area ────────────────────────────────────────────── */
