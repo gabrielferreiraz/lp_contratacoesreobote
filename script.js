@@ -157,6 +157,7 @@ els.vSim.addEventListener('click', () => {
   els.vSim.classList.add('selected-sim');
   els.vNao.classList.remove('selected-nao');
   clearError('err-veiculo');
+  _fbq('trackCustom', 'SelecionouVeiculo', { possui: 'SIM' });
   updateSubmitArea();
 });
 
@@ -165,6 +166,7 @@ els.vNao.addEventListener('click', () => {
   els.vNao.classList.add('selected-nao');
   els.vSim.classList.remove('selected-sim');
   clearError('err-veiculo');
+  _fbq('trackCustom', 'SelecionouVeiculo', { possui: 'NÃO' });
   updateSubmitArea();
 });
 
@@ -176,6 +178,7 @@ els.sobre.addEventListener('input', updateSubmitArea);
    ============================================================ */
 els.btnNext.addEventListener('click', () => {
   if (!validateStep1()) return;
+  _fbq('trackCustom', 'PassouEtapa1');
   goToStep(2);
 });
 
@@ -388,7 +391,38 @@ const vcObserver = new IntersectionObserver(
 );
 vcObserver.observe(document.getElementById('formulario'));
 
-/* ── Helper: dispara Lead no Meta Pixel ─────────────────────── */
-function trackLead() {
-  if (typeof fbq !== 'undefined') fbq('track', 'Lead');
-}
+/* ============================================================
+   META PIXEL — helpers
+   ============================================================ */
+function trackLead()            { _fbq('track', 'Lead'); }
+function _fbq(type, event, obj) { if (typeof fbq !== 'undefined') fbq(type, event, obj); }
+
+/* ── InitiateCheckout — clique em qualquer CTA ──────────────── */
+document.querySelectorAll('.btn-cta').forEach((btn) => {
+  btn.addEventListener('click', () => _fbq('track', 'InitiateCheckout'));
+});
+
+/* ── ScrollDepth — 50% e 90% ────────────────────────────────── */
+const _scrollFired = { 50: false, 90: false };
+window.addEventListener('scroll', () => {
+  const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+  [50, 90].forEach((m) => {
+    if (!_scrollFired[m] && pct >= m) {
+      _scrollFired[m] = true;
+      _fbq('trackCustom', 'ScrollDepth', { percent: m });
+    }
+  });
+}, { passive: true });
+
+/* ── AssistioVideo — play na VSL via postMessage do YouTube ─── */
+let _videoPlayed = false;
+window.addEventListener('message', (e) => {
+  if (e.origin !== 'https://www.youtube.com') return;
+  try {
+    const data = JSON.parse(e.data);
+    if (data.event === 'infoDelivery' && data.info?.playerState === 1 && !_videoPlayed) {
+      _videoPlayed = true;
+      _fbq('trackCustom', 'AssistioVideo');
+    }
+  } catch (_) {}
+});
