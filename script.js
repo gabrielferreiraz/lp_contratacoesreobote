@@ -174,9 +174,7 @@ function validateStep1() {
    VALIDAÇÃO — Step 2 (para liberar botão de envio)
    ============================================================ */
 function checkStep2Complete() {
-  const veiculoOk = state.possuiCarro !== null;
-  const sobreOk   = els.sobre.value.trim().length >= 10;
-  return veiculoOk && sobreOk;
+  return state.possuiCarro !== null;
 }
 
 function updateSubmitArea() {
@@ -215,8 +213,7 @@ els.vNao.addEventListener('click', () => {
   updateSubmitArea();
 });
 
-/* ── "Sobre" — monitora preenchimento ──────────────────────── */
-els.sobre.addEventListener('input', updateSubmitArea);
+/* "Sobre" — validação ocorre no clique do botão de envio */
 
 /* ============================================================
    NAVEGAÇÃO ENTRE STEPS
