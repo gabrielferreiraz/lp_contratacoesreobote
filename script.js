@@ -427,15 +427,25 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-/* ── AssistioVideo — play na VSL via postMessage do YouTube ─── */
+/* ── AssistioVideo + rotação do celular via postMessage do YouTube ─── */
 let _videoPlayed = false;
+const _phoneWrap = document.querySelector('.phone-wrap');
+
 window.addEventListener('message', (e) => {
   if (e.origin !== 'https://www.youtube.com') return;
   try {
     const data = JSON.parse(e.data);
-    if (data.event === 'infoDelivery' && data.info?.playerState === 1 && !_videoPlayed) {
-      _videoPlayed = true;
-      _fbq('trackCustom', 'AssistioVideo');
+    if (data.event !== 'infoDelivery') return;
+    const playerState = data?.info?.playerState;
+
+    if (playerState === 1) {           // playing → deita o celular
+      _phoneWrap.classList.add('phone-landscape');
+      if (!_videoPlayed) {
+        _videoPlayed = true;
+        _fbq('trackCustom', 'AssistioVideo');
+      }
+    } else if (playerState === 2 || playerState === 0) { // pausado / encerrado → volta ao portrait
+      _phoneWrap.classList.remove('phone-landscape');
     }
   } catch (_) {}
 });
