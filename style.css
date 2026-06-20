@@ -955,34 +955,37 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 .location-cta svg { flex-shrink: 0; }
 
 .social-label {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-soft);
+  color: var(--blue);
   margin-top: 28px;
   margin-bottom: 10px;
 }
+
+/* ── Mobile: coluna única, item horizontal (ícone + texto) ──── */
 .social-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr;
   border: 1.5px solid #D8E8F4;
   border-radius: 12px;
   overflow: hidden;
   margin-top: 10px;
 }
 .social-grid-item {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
   align-items: center;
-  gap: 6px;
-  padding: 18px 10px;
+  padding: 14px 16px;
   text-decoration: none;
-  border-right: 1.5px solid #D8E8F4;
-  text-align: center;
+  border-bottom: 1.5px solid #D8E8F4;
   transition: background 0.18s;
 }
-.social-grid-item:last-child { border-right: none; }
+.social-grid-item:last-child { border-bottom: none; }
 .social-grid-item:hover { background: rgba(0, 174, 239, 0.04); }
 .social-grid-icon {
   width: 38px;
@@ -995,7 +998,8 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   justify-content: center;
   color: var(--blue);
   transition: background 0.18s, border-color 0.18s;
-  margin-bottom: 2px;
+  grid-row: 1 / 3;
+  grid-column: 1;
 }
 .social-grid-icon svg { width: 17px; height: 17px; }
 .social-grid-item:hover .social-grid-icon {
@@ -1003,18 +1007,23 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   border-color: rgba(0, 174, 239, 0.3);
 }
 .social-grid-name {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-dark);
   line-height: 1.2;
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
 }
 .social-grid-handle {
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   color: var(--text-soft);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  white-space: nowrap;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
 }
 
 /* ============================================================
@@ -1144,6 +1153,36 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
     width: 1px;
     height: 60px;
     margin: 0;
+  }
+
+  /* Social grid: 3 colunas, ícone em cima */
+  .social-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .social-grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 10px;
+    border-right: 1.5px solid #D8E8F4;
+    border-bottom: none;
+    text-align: center;
+  }
+  .social-grid-item:last-child {
+    border-right: none;
+    border-bottom: none;
+  }
+  .social-grid-icon {
+    grid-row: auto;
+    grid-column: auto;
+  }
+  .social-grid-name,
+  .social-grid-handle {
+    grid-column: auto;
+    grid-row: auto;
+    align-self: auto;
+    text-align: center;
   }
 }
 

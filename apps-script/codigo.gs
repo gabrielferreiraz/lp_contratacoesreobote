@@ -18,14 +18,14 @@
  *   E: CPF (vazio) | F: Possui Veículo | G: Sobre | H: Cidade
  */
 
-var SPREADSHEET_ID = '1469257025'; // ← confirme este ID na URL da sua planilha
+var SPREADSHEET_ID = '1Gk5Bhu9NbKI7Gv9dgT9urQFHOxkYzRcLnWAewjWzfb4';
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-    var tabName = data.possuiCarro === 'SIM' ? 'candidatosComCarro' : 'candidatosSemCarro';
+    var tabName = data.possuiCarro === 'SIM' ? 'Candidatos Face - Com Carro' : 'Candidatos Face - Sem Carro';
     var sheet = spreadsheet.getSheetByName(tabName);
 
     if (!sheet) {
@@ -34,23 +34,27 @@ function doPost(e) {
 
     /* Cabeçalho automático se a planilha estiver vazia */
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Nome', 'Telefone', 'Idade', 'E-mail', 'CPF', 'Possui Veículo', 'Sobre', 'Cidade']);
+      sheet.appendRow(['Nome', 'Telefone', 'Idade', 'E-mail', 'CPF', 'Possui Veículo', 'Sobre', 'Cidade', 'Data/Hora']);
+      sheet.getRange('B:B').setNumberFormat('@');
+      sheet.getRange('I:I').setNumberFormat('dd/MM/yyyy HH:mm:ss');
     }
 
-    sheet.appendRow([
+    /* Formato da célula de telefone ANTES de escrever para evitar #ERROR! */
+    var newRow = sheet.getLastRow() + 1;
+    sheet.getRange(newRow, 2).setNumberFormat('@');
+    sheet.getRange(newRow, 9).setNumberFormat('dd/MM/yyyy HH:mm:ss');
+
+    sheet.getRange(newRow, 1, 1, 9).setValues([[
       sanitize(data.nome),
       sanitize(data.telefone),
       sanitize(data.idade),
       sanitize(data.email),
-      '',                        // CPF — reservado para uso futuro
+      '',
       sanitize(data.possuiCarro),
       sanitize(data.sobre),
       'Campo Grande',
-    ]);
-
-    /* Marca timestamp na coluna I (opcional) */
-    var lastRow = sheet.getLastRow();
-    sheet.getRange(lastRow, 9).setValue(new Date());
+      new Date(),
+    ]]);
 
     return jsonResponse({ result: 'success' });
 

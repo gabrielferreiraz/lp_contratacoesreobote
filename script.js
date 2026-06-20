@@ -4,8 +4,8 @@
 
 /* ── Configuração — preencher antes de publicar ─────────────── */
 const CONFIG = {
-  WEBHOOK_URL:    'URL_DO_WEBHOOK_AQUI',          // URL do Google Apps Script publicado
-  WHATSAPP_GROUP: 'https://chat.whatsapp.com/LINK_DO_GRUPO_AQUI', // Link do grupo
+  WEBHOOK_URL:    'https://script.google.com/macros/s/AKfycbwD6OOShFgi00mLpQwSPfkxB0YzpSAh3uUlWJbLsLHbW_B9crRQCdvGbI3x96BIPAvx/exec',
+  WHATSAPP_GROUP: 'https://chat.whatsapp.com/J5x7Pq3zzGa6mQXnA4AC6u',
 };
 
 /* ── Estado do formulário ───────────────────────────────────── */
