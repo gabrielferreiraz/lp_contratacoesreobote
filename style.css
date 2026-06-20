@@ -233,21 +233,6 @@ h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; line-height: 1.2; }
   transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Landscape: gira o celular quando o vídeo toca ──────────── */
-.phone-wrap.phone-landscape {
-  margin-bottom: -130px;
-}
-.phone-wrap.phone-landscape .phone-frame {
-  transform: rotate(-90deg) scale(0.72);
-}
-@media (min-width: 480px) {
-  .phone-wrap.phone-landscape { margin-bottom: -100px; }
-  .phone-wrap.phone-landscape .phone-frame { transform: rotate(-90deg) scale(0.82); }
-}
-@media (min-width: 768px) {
-  .phone-wrap.phone-landscape { margin-bottom: 36px; }
-  .phone-wrap.phone-landscape .phone-frame { transform: rotate(-90deg) scale(1); }
-}
 .phone-notch {
   display: flex;
   justify-content: center;
