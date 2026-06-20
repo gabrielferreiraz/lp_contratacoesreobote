@@ -4,14 +4,15 @@
 
 /* ── Configuração — preencher antes de publicar ─────────────── */
 const CONFIG = {
-  WEBHOOK_URL:    'https://script.google.com/macros/s/AKfycbwD6OOShFgi00mLpQwSPfkxB0YzpSAh3uUlWJbLsLHbW_B9crRQCdvGbI3x96BIPAvx/exec',
+  WEBHOOK_URL:    'https://script.google.com/macros/s/AKfycbx518u5_gpWqlKepW6pj_hwo_ZxpXTkxuWiIkA1WvozhXXxo86HGXcGdrZnnhAH-y79Wg/exec',
   WHATSAPP_GROUP: 'https://chat.whatsapp.com/J5x7Pq3zzGa6mQXnA4AC6u',
 };
 
 /* ── Estado do formulário ───────────────────────────────────── */
 const state = {
-  step:      1,
-  possuiCarro: null, // 'SIM' | 'NÃO' | null
+  step:              1,
+  possuiCarro:       null,
+  experienciaVendas: null,
 };
 
 /* ── Elementos ──────────────────────────────────────────────── */
@@ -24,14 +25,14 @@ const els = {
   idade:         $('idade'),
   telefone:      $('telefone'),
   email:         $('email'),
+  cidade:        $('cidade'),
   vSim:          $('v-sim'),
   vNao:          $('v-nao'),
   sobre:         $('sobre'),
   btnNext:       $('btn-next'),
   btnBack:       $('btn-back'),
   submitArea:    $('submit-area'),
-  btnSemCarro:   $('btn-sem-carro'),
-  btnComCarro:   $('btn-com-carro'),
+  btnSubmit:     $('btn-submit'),
   progStep1:     document.querySelector('[data-step="1"]'),
   progStep2:     document.querySelector('[data-step="2"]'),
   progFill:      $('prog-line-fill'),
@@ -167,6 +168,16 @@ function validateStep1() {
     els.email.classList.remove('error');
   }
 
+  // Cidade
+  if (els.cidade.value.trim().length < 2) {
+    setError('err-cidade', 'Informe sua cidade.');
+    els.cidade.classList.add('error');
+    valid = false;
+  } else {
+    clearError('err-cidade');
+    els.cidade.classList.remove('error');
+  }
+
   return valid;
 }
 
@@ -174,7 +185,7 @@ function validateStep1() {
    VALIDAÇÃO — Step 2 (para liberar botão de envio)
    ============================================================ */
 function checkStep2Complete() {
-  return state.possuiCarro !== null;
+  return state.possuiCarro !== null && state.experienciaVendas !== null;
 }
 
 function updateSubmitArea() {
@@ -182,16 +193,7 @@ function updateSubmitArea() {
     els.submitArea.classList.add('hidden');
     return;
   }
-
   els.submitArea.classList.remove('hidden');
-
-  if (state.possuiCarro === 'SIM') {
-    els.btnSemCarro.classList.add('hidden');
-    els.btnComCarro.classList.remove('hidden');
-  } else {
-    els.btnComCarro.classList.add('hidden');
-    els.btnSemCarro.classList.remove('hidden');
-  }
 }
 
 /* ── Veículo — seleção ──────────────────────────────────────── */
@@ -211,6 +213,17 @@ els.vNao.addEventListener('click', () => {
   clearError('err-veiculo');
   _fbq('trackCustom', 'SelecionouVeiculo', { possui: 'NÃO' });
   updateSubmitArea();
+});
+
+/* ── Experiência em vendas — seleção ───────────────────────── */
+document.querySelectorAll('.exp-opts .vbtn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    state.experienciaVendas = btn.dataset.value;
+    document.querySelectorAll('.exp-opts .vbtn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    clearError('err-exp');
+    updateSubmitArea();
+  });
 });
 
 /* "Sobre" — validação ocorre no clique do botão de envio */
@@ -263,58 +276,58 @@ function buildPayload() {
   const formatted = `+55 (${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7,11)}`;
 
   return {
-    nome:        els.nome.value.trim(),
-    idade:       els.idade.value.trim(),
-    telefone:    formatted,
-    email:       els.email.value.trim().toLowerCase(),
-    possuiCarro: state.possuiCarro,
-    sobre:       els.sobre.value.trim(),
+    nome:              els.nome.value.trim(),
+    idade:             els.idade.value.trim(),
+    telefone:          formatted,
+    email:             els.email.value.trim().toLowerCase(),
+    cidade:            els.cidade.value.trim(),
+    experienciaVendas: state.experienciaVendas,
+    possuiCarro:       state.possuiCarro,
+    sobre:             els.sobre.value.trim(),
   };
 }
 
 /* ============================================================
-   ENVIO — SEM CARRO → salva na planilha → mensagem de sucesso
+   ENVIO — botão único, roteamento silencioso após submit
    ============================================================ */
-els.btnSemCarro.addEventListener('click', async () => {
+els.btnSubmit.addEventListener('click', async () => {
   if (!validateStep2Fields()) return;
 
-  setLoading(els.btnSemCarro, true);
+  setLoading(els.btnSubmit, true);
 
   try {
     await submitToSheets(buildPayload());
     trackLead();
-    showSuccessSemCarro();
   } catch (err) {
-    showNetworkError(els.btnSemCarro);
-  } finally {
-    setLoading(els.btnSemCarro, false);
+    if (state.possuiCarro === 'NÃO') {
+      /* Sem carro: exibe erro — sem prejuízo de roteamento */
+      showNetworkError(els.btnSubmit);
+      setLoading(els.btnSubmit, false);
+      return;
+    }
+    /* Com carro: mesmo com erro, não perdemos o lead */
+    trackLead();
   }
-});
 
-/* ============================================================
-   ENVIO — COM CARRO → salva na planilha → abre grupo WhatsApp
-   ============================================================ */
-els.btnComCarro.addEventListener('click', async () => {
-  if (!validateStep2Fields()) return;
+  setLoading(els.btnSubmit, false);
 
-  setLoading(els.btnComCarro, true);
-
-  try {
-    await submitToSheets(buildPayload());
-    trackLead();
+  if (state.possuiCarro === 'SIM') {
     window.open(CONFIG.WHATSAPP_GROUP, '_blank', 'noopener,noreferrer');
-  } catch (err) {
-    /* Mesmo com erro de rede, redireciona — lead não é perdido na UX */
-    trackLead();
-    window.open(CONFIG.WHATSAPP_GROUP, '_blank', 'noopener,noreferrer');
-  } finally {
-    setLoading(els.btnComCarro, false);
+  } else {
+    showSuccessSemCarro();
   }
 });
 
 /* ── Validação antes de enviar (step 2) ─────────────────────── */
 function validateStep2Fields() {
   let valid = true;
+
+  if (state.experienciaVendas === null) {
+    setError('err-exp', 'Selecione sua experiência em vendas.');
+    valid = false;
+  } else {
+    clearError('err-exp');
+  }
 
   if (state.possuiCarro === null) {
     setError('err-veiculo', 'Selecione uma opção acima.');

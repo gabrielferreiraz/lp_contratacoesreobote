@@ -34,7 +34,7 @@ function doPost(e) {
 
     /* Cabeçalho automático se a planilha estiver vazia */
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['Nome', 'Telefone', 'Idade', 'E-mail', 'CPF', 'Possui Veículo', 'Sobre', 'Cidade', 'Data/Hora']);
+      sheet.appendRow(['Nome', 'Telefone', 'Idade', 'E-mail', 'Cidade', 'Exp. Vendas', 'Possui Veículo', 'Sobre', 'Data/Hora']);
       sheet.getRange('B:B').setNumberFormat('@');
       sheet.getRange('I:I').setNumberFormat('dd/MM/yyyy HH:mm:ss');
     }
@@ -49,10 +49,10 @@ function doPost(e) {
       sanitize(data.telefone),
       sanitize(data.idade),
       sanitize(data.email),
-      '',
+      sanitize(data.cidade),
+      sanitize(data.experienciaVendas),
       sanitize(data.possuiCarro),
       sanitize(data.sobre),
-      'Campo Grande',
       new Date(),
     ]]);
 
