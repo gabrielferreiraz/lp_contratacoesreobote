@@ -427,25 +427,60 @@ window.addEventListener('scroll', () => {
   });
 }, { passive: true });
 
-/* ── AssistioVideo + rotação do celular via postMessage do YouTube ─── */
-let _videoPlayed = false;
-const _phoneWrap = document.querySelector('.phone-wrap');
+/* ============================================================
+   YOUTUBE IFRAME API — zoom do celular + pixel AssistioVideo
+   ============================================================ */
+const _phoneWrap  = document.querySelector('.phone-wrap');
+let _ytPlayer     = null;
+let _videoPlayed  = false;
+let _endPoll      = null;
 
-window.addEventListener('message', (e) => {
-  if (e.origin !== 'https://www.youtube.com') return;
-  try {
-    const data = JSON.parse(e.data);
-    if (data.event !== 'infoDelivery') return;
-    const playerState = data?.info?.playerState;
+/* Carrega a API do YouTube de forma assíncrona */
+(function loadYTApi() {
+  const s = document.createElement('script');
+  s.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(s);
+})();
 
-    if (playerState === 1) {           // playing → deita o celular
-      _phoneWrap.classList.add('phone-landscape');
-      if (!_videoPlayed) {
-        _videoPlayed = true;
-        _fbq('trackCustom', 'AssistioVideo');
-      }
-    } else if (playerState === 2 || playerState === 0) { // pausado / encerrado → volta ao portrait
-      _phoneWrap.classList.remove('phone-landscape');
+/* Callback global exigido pela API */
+window.onYouTubeIframeAPIReady = function () {
+  _ytPlayer = new YT.Player('vsl-iframe', {
+    events: { onStateChange: _onPlayerStateChange }
+  });
+};
+
+function _onPlayerStateChange(e) {
+  if (e.data === YT.PlayerState.PLAYING) {
+    _startZoom();
+    if (!_videoPlayed) {
+      _videoPlayed = true;
+      _fbq('trackCustom', 'AssistioVideo');
     }
-  } catch (_) {}
-});
+  } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+    _endZoom();
+  }
+}
+
+function _startZoom() {
+  _phoneWrap.classList.remove('phone-unzooming');
+  _phoneWrap.classList.add('phone-zoomed');
+
+  /* Polling para detectar quando faltam ~4s para o fim */
+  clearInterval(_endPoll);
+  _endPoll = setInterval(() => {
+    if (!_ytPlayer || typeof _ytPlayer.getCurrentTime !== 'function') return;
+    const remaining = _ytPlayer.getDuration() - _ytPlayer.getCurrentTime();
+    if (remaining <= 4) {
+      _endZoom();
+      clearInterval(_endPoll);
+    }
+  }, 500);
+}
+
+function _endZoom() {
+  clearInterval(_endPoll);
+  _phoneWrap.classList.add('phone-unzooming');
+  _phoneWrap.classList.remove('phone-zoomed');
+  /* Remove a classe de transição rápida após a animação acabar */
+  setTimeout(() => _phoneWrap.classList.remove('phone-unzooming'), 3100);
+}
