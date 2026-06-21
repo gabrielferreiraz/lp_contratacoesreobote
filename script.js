@@ -37,6 +37,8 @@ const els = {
   progStep2:     document.querySelector('[data-step="2"]'),
   progFill:      $('prog-line-fill'),
   form:          $('candidacy-form'),
+  successCom:    $('success-com-carro'),
+  linkGrupo:     $('link-grupo'),
   successSem:    $('success-sem-carro'),
   modalOverlay:  $('modal-overlay'),
   modalClose:    $('modal-close'),
@@ -312,7 +314,7 @@ els.btnSubmit.addEventListener('click', async () => {
   setLoading(els.btnSubmit, false);
 
   if (state.possuiCarro === 'SIM') {
-    window.open(CONFIG.WHATSAPP_GROUP, '_blank', 'noopener,noreferrer');
+    showSuccessComCarro();
   } else {
     showSuccessSemCarro();
   }
@@ -362,6 +364,14 @@ async function submitToSheets(payload) {
 }
 
 /* ── Exibe sucesso sem carro ────────────────────────────────── */
+function showSuccessComCarro() {
+  els.linkGrupo.href = CONFIG.WHATSAPP_GROUP;
+  els.form.classList.add('hidden');
+  els.formProgress.classList.add('hidden');
+  els.successCom.classList.remove('hidden');
+  els.modalOverlay.scrollTop = 0;
+}
+
 function showSuccessSemCarro() {
   els.form.classList.add('hidden');
   els.formProgress.classList.add('hidden');
@@ -390,10 +400,12 @@ function clearError(id) {
 }
 function setLoading(btn, on) {
   if (on) {
+    btn.disabled = true;
     btn.classList.add('loading');
     btn.dataset.origText = btn.innerHTML;
     btn.innerHTML = '';
   } else {
+    btn.disabled = false;
     btn.classList.remove('loading');
     if (btn.dataset.origText) btn.innerHTML = btn.dataset.origText;
   }
