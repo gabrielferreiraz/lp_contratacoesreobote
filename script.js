@@ -4,14 +4,15 @@
 
 /* ── Configuração — preencher antes de publicar ─────────────── */
 const CONFIG = {
-  WEBHOOK_URL:    'https://script.google.com/macros/s/AKfycbx518u5_gpWqlKepW6pj_hwo_ZxpXTkxuWiIkA1WvozhXXxo86HGXcGdrZnnhAH-y79Wg/exec',
-  WHATSAPP_GROUP: 'https://chat.whatsapp.com/J5x7Pq3zzGa6mQXnA4AC6u',
+  WEBHOOK_URL: 'https://script.google.com/macros/s/AKfycbx518u5_gpWqlKepW6pj_hwo_ZxpXTkxuWiIkA1WvozhXXxo86HGXcGdrZnnhAH-y79Wg/exec',
+  WHATSAPP_NUMBER: '5567981860152', // TODO: número com DDI+DDD, só dígitos (ex.: 5562999999999)
+  WHATSAPP_MESSAGE: 'Olá! Acabei de enviar minha candidatura para a vaga na Reobote Consórcios.', // TODO: ajustar mensagem
 };
 
 /* ── Estado do formulário ───────────────────────────────────── */
 const state = {
-  step:              1,
-  possuiCarro:       null,
+  step: 1,
+  possuiCarro: null,
   experienciaVendas: null,
 };
 
@@ -19,30 +20,30 @@ const state = {
 const $ = (id) => document.getElementById(id);
 
 const els = {
-  step1:         $('step-1'),
-  step2:         $('step-2'),
-  nome:          $('nome'),
-  idade:         $('idade'),
-  telefone:      $('telefone'),
-  email:         $('email'),
-  cidade:        $('cidade'),
-  vSim:          $('v-sim'),
-  vNao:          $('v-nao'),
-  sobre:         $('sobre'),
-  btnNext:       $('btn-next'),
-  btnBack:       $('btn-back'),
-  submitArea:    $('submit-area'),
-  btnSubmit:     $('btn-submit'),
-  progStep1:     document.querySelector('[data-step="1"]'),
-  progStep2:     document.querySelector('[data-step="2"]'),
-  progFill:      $('prog-line-fill'),
-  form:          $('candidacy-form'),
-  successCom:    $('success-com-carro'),
-  linkGrupo:     $('link-grupo'),
-  successSem:    $('success-sem-carro'),
-  modalOverlay:  $('modal-overlay'),
-  modalClose:    $('modal-close'),
-  formProgress:  $('form-progress'),
+  step1: $('step-1'),
+  step2: $('step-2'),
+  nome: $('nome'),
+  idade: $('idade'),
+  telefone: $('telefone'),
+  email: $('email'),
+  cidade: $('cidade'),
+  vSim: $('v-sim'),
+  vNao: $('v-nao'),
+  sobre: $('sobre'),
+  btnNext: $('btn-next'),
+  btnBack: $('btn-back'),
+  submitArea: $('submit-area'),
+  btnSubmit: $('btn-submit'),
+  progStep1: document.querySelector('[data-step="1"]'),
+  progStep2: document.querySelector('[data-step="2"]'),
+  progFill: $('prog-line-fill'),
+  form: $('candidacy-form'),
+  successCom: $('success-com-carro'),
+  linkGrupo: $('link-grupo'),
+  successSem: $('success-sem-carro'),
+  modalOverlay: $('modal-overlay'),
+  modalClose: $('modal-close'),
+  formProgress: $('form-progress'),
 };
 
 /* ============================================================
@@ -275,17 +276,17 @@ function goToStep(n) {
    ============================================================ */
 function buildPayload() {
   const digits = phoneDigits(els.telefone.value);
-  const formatted = `+55 (${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7,11)}`;
+  const formatted = `+55 (${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
 
   return {
-    nome:              els.nome.value.trim(),
-    idade:             els.idade.value.trim(),
-    telefone:          formatted,
-    email:             els.email.value.trim().toLowerCase(),
-    cidade:            els.cidade.value.trim(),
+    nome: els.nome.value.trim(),
+    idade: els.idade.value.trim(),
+    telefone: formatted,
+    email: els.email.value.trim().toLowerCase(),
+    cidade: els.cidade.value.trim(),
     experienciaVendas: state.experienciaVendas,
-    possuiCarro:       state.possuiCarro,
-    sobre:             els.sobre.value.trim(),
+    possuiCarro: state.possuiCarro,
+    sobre: els.sobre.value.trim(),
   };
 }
 
@@ -353,9 +354,9 @@ function validateStep2Fields() {
 /* ── Fetch para Google Apps Script ──────────────────────────── */
 async function submitToSheets(payload) {
   const res = await fetch(CONFIG.WEBHOOK_URL, {
-    method:  'POST',
+    method: 'POST',
     headers: { 'Content-Type': 'text/plain' }, // Apps Script exige text/plain para CORS simples
-    body:    JSON.stringify(payload),
+    body: JSON.stringify(payload),
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -365,7 +366,7 @@ async function submitToSheets(payload) {
 
 /* ── Exibe sucesso sem carro ────────────────────────────────── */
 function showSuccessComCarro() {
-  els.linkGrupo.href = CONFIG.WHATSAPP_GROUP;
+  els.linkGrupo.href = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
   els.form.classList.add('hidden');
   els.formProgress.classList.add('hidden');
   els.successCom.classList.remove('hidden');
@@ -435,7 +436,7 @@ document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 /* ============================================================
    META PIXEL — helpers
    ============================================================ */
-function trackLead()            { _fbq('track', 'Lead'); }
+function trackLead() { _fbq('track', 'Lead'); }
 function _fbq(type, event, obj) { if (typeof fbq !== 'undefined') fbq(type, event, obj); }
 
 /* ── InitiateCheckout — dispara junto com openModal ─────────── */
@@ -455,10 +456,10 @@ window.addEventListener('scroll', () => {
 /* ============================================================
    YOUTUBE IFRAME API — zoom do celular + pixel AssistioVideo
    ============================================================ */
-const _phoneWrap  = document.querySelector('.phone-wrap');
-let _ytPlayer     = null;
-let _videoPlayed  = false;
-let _endPoll      = null;
+const _phoneWrap = document.querySelector('.phone-wrap');
+let _ytPlayer = null;
+let _videoPlayed = false;
+let _endPoll = null;
 
 /* Carrega a API do YouTube de forma assíncrona */
 (function loadYTApi() {
